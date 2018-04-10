@@ -1,0 +1,44 @@
+{
+  "package": "com.xblydxj.fastAppDemo",
+  "name": "快应用小入门",
+  "versionName": "1.0.0",
+  "versionCode": "1",
+  "minPlatformVersion": "101",
+  "icon": "/Common/logo.png",
+  "features": [
+    { "name": "system.prompt" },
+    { "name": "system.router" },
+    { "name": "system.shortcut" },
+    { "name": "system.fetch" },
+    { "name": "system.webview" },
+    { "name": "system.storage" },
+		{ "name": "system.share" },
+		{ "name": "system.clipboard" }
+  ],
+  "permissions": [
+    { "origin": "*" }
+  ],
+  "config": {
+    "logLevel": "debug"
+  },
+  "router": {
+    "entry": "Main",
+    "pages": {
+      "Main": {
+        "component": "index"
+      },
+			"Webview":{
+				"component": "index"
+			}
+    }
+  },
+  "display": {
+    "titleBarBackgroundColor": "#26a69a",
+    "titleBarTextColor": "#ffffff",
+    "pages": {
+      "Main": {
+        "titleBarText": "主页"
+      }
+    }
+  }
+}

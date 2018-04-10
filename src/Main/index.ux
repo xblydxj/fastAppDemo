@@ -1,0 +1,166 @@
+<template>
+    <refresh @refresh="refresh" refreshing="{{isRefreshing}}">
+    <list class="home-page" onscrollbottom="loadMoreData">
+        <list-item type="banner">
+            <swiper class="banner" autoplay="true" interval="4000">
+              <stack class="banner" for="{{bannerlist}}">
+                <image class="banner-image" src="{{$item.imagePath}}" onclick="openArticle($item.url, '', $item.title)"></image>
+              </stack>
+            </swiper>
+        </list-item>
+				
+        <!-- 文章 -->
+        <block for="articleList">
+				<list-item type="article"  class="article-item" onclick="openArticle($item.link, $item.projectLink, $item.title)">
+					<div style="display: flex">
+						<text class="text-title" style="flex: 1">{{$item.title}}</text>
+					</div>
+					<div class="article-tip">
+							<text class="tip">分类: {{$item.superChapterName}}/{{$item.chapterName}}</text>
+					</div>
+					<div class="article-tip">
+						<text class="tip">作者: {{$item.author}}</text>
+						<text class="time">{{$item.niceDate}}</text>
+					</div>
+				</list-item>
+        </block>
+
+        <list-item type="loadMore" class="load-more" if="articleList.length > 0">
+          <progress type="circular" show="{{hasMoreData}}"></progress>
+          <text show="{{hasMoreData}}">加载中</text>
+          <text show="{{!hasMoreData}}">没有更多了</text>
+        </list-item>
+      </list>
+    </refresh>
+</template>
+
+<script>
+	import fetch from '@system.fetch'
+	import webview from '@system.webview'
+  import router from '@system.router'
+  export default {
+    data: {
+      bannerlist: [],
+      articleList: [],
+      page: 0,
+      hasMoreData: true,
+      isRefreshing: false,
+    },
+    onInit() {
+      this.refresh({refreshing: true})
+    },
+    async getBanner() {
+			fetch.fetch({
+        url:"http://www.wanandroid.com/banner/json",
+        success:function(data){
+          this.bannerlist = JSON.parse(data.data).data;
+        }.bind(this),
+        fail: function(data, code) {
+          console.log("failed: code=" + code);
+        }
+      })
+    },
+		async getArticle() {
+			fetch.fetch({
+        url:'http://www.wanandroid.com/article/list/' + this.page + '/json',
+        success: function(data){
+					data = JSON.parse(data.data).data
+					this.hasMoreData = !data.over
+          if(this.page > 0) {
+            this.articleList = this.articleList.concat(data.datas)
+          } else {
+            this.isRefreshing = false
+            this.articleList = data.datas
+          };
+        }.bind(this),
+        fail: function(data, code) {
+          console.log("failed  code=" + code);
+        }
+      })
+    },
+    loadMoreData() {
+      if(this.hasMoreData) {
+        this.page++
+        this.getArticle()
+      }
+    },
+    openArticle(link, projectLink, title) {
+      var url = projectLink === '' ? link : projectLink
+      if(url !== '') {
+        this.$app.$def.router.push({
+          uri: 'Webview',
+          params: { 
+            title: title,
+            url: url
+          }
+        })
+      }
+    },
+    refresh(evt) {
+      this.isRefreshing = evt.refreshing
+      this.page = 0
+      this.getBanner()
+      this.getArticle()
+    }
+  }
+</script>
+
+<style>
+  .banner, .banner-image {
+    width: 100%;
+		padding: 5px;
+    height: 360px;
+  }
+  .banner-title {
+    text-overflow: ellipsis;
+    lines: 1;
+    text-align: center;
+    height: 90px;
+    width: 100%;
+    color: #ffffff;
+    background-color: #222222;
+    opacity: 0.5;
+  }
+  .article-item {
+		height: 200px;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    border-bottom-width: 1px;
+    border-bottom-color: #eeeeee;
+  }
+  .text-tip {
+    width: 100%;
+    padding: 10px;
+    padding-top: 30px;
+    padding-bottom: 30px;
+    border-bottom-width: 1px;
+    border-bottom-color: #eeeeee;
+  }
+  .article-item .text-title {
+    font-size: 30px;
+    color: #222222;
+    text-overflow: ellipsis;
+    lines: 1;
+    margin-bottom: 15px;
+  }
+  .article-item .article-tip {
+    display: flex;
+    flex-direction: row;
+  }
+  .article-tip .tip, .article-tip .time {
+    font-size: 24px;
+    color: #aaaaaa;
+  }
+  .time {
+    flex: 1;
+    text-align: right;
+		margin-top: 5px;
+  }
+  .load-more {
+    padding: 20px;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+  }
+</style>

@@ -1,0 +1,41 @@
+<script>
+  /**
+   * 应用级别的配置，供所有页面公用
+   */
+  import util from './util'
+  import clipboard from '@system.clipboard'
+  import prompt from '@system.prompt'
+  import router from '@system.router'
+  import storage from '@system.storage'
+  import share from '@system.share'
+	import nativeFetch from '@system.fetch'
+	
+  export default {
+    clipboard: clipboard,
+    prompt: prompt,
+    router: router,
+    storage: storage,
+    share: share,
+    createShortcut: util.createShortcut
+  }
+	
+	const globalRef = global.__proto__ || global
+	// global注入regeneratorRuntime
+	globalRef.regeneratorRuntime = require('babel-runtime/regenerator')
+
+	const natives = {
+		async fetch (options) {
+			const p1 = new Promise((resolve, reject) => {
+				options.success = function (data, code) {
+					resolve({ data, code })
+				}
+				options.fail = function (data, code) {
+					resolve({ data, code })
+				}
+				nativeFetch.fetch(options)
+			})
+			return p1
+		}
+	}
+	globalRef.natives = natives
+</script>
